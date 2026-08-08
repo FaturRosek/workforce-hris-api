@@ -1,6 +1,7 @@
 const express = require("express");
 
 const employeeRoutes = require("./routes/employeeRoutes");
+const customerRoutes = require("./routes/customerRoutes");
 
 const app = express();
 
@@ -13,5 +14,6 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/employees", employeeRoutes);
+app.use("/api/customers", customerRoutes);
 
 module.exports = app;
