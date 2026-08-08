@@ -7,6 +7,8 @@ const serviceRoutes = require("./routes/serviceRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
+const authRoutes = require("./routes/authRoutes");
+const authenticate = require("./middleware/authMiddleware");
 
 const app = express();
 
@@ -24,6 +26,7 @@ app.use("/api/positions", positionRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/payments", paymentRoutes);
-app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/dashboard", authenticate, dashboardRoutes);
+app.use("/api/auth", authRoutes);
 
 module.exports = app;
