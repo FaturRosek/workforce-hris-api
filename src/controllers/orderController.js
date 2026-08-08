@@ -241,91 +241,149 @@ const createOrder = async (req, res) => {
 };
 
 const updateOrderStatus = async (req, res) => {
-    try {
-      const { id } = req.params;
-      const { status } = req.body;
+  const trx = await db.transaction();
 
-      const allowedStatuses = [
-        "Pending",
-        "Measurement",
-        "Cutting",
-        "Sewing",
-        "Finishing",
-        "Ready Pickup",
-        "Completed",
-        "Cancelled",
-      ];
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
 
-      if (!status) {
-        return res.status(400).json({
-          success: false,
-          message: "Status is required",
-        });
-      }
+    const allowedStatuses = [
+      "Pending",
+      "Measurement",
+      "Cutting",
+      "Sewing",
+      "Finishing",
+      "Ready Pickup",
+      "Completed",
+      "Cancelled",
+    ];
 
-      if (!allowedStatuses.includes(status)) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid order status",
-        });
-      }
+    if (!status) {
+      await trx.rollback();
 
-      const order = await db("orders").where("id", id).first();
-
-      if (!order) {
-        return res.status(404).json({
-          success: false,
-          message: "Order not found",
-        });
-      }
-
-      // Order yang sudah selesai atau dibatalkan tidak boleh diubah lagi
-      if (order.status === "Completed" || order.status === "Cancelled") {
-        return res.status(400).json({
-          success: false,
-          message: `Order is already ${order.status}`,
-        });
-      }
-
-      const statusFlow = {
-        Pending: ["Measurement", "Cancelled"],
-        Measurement: ["Cutting", "Cancelled"],
-        Cutting: ["Sewing", "Cancelled"],
-        Sewing: ["Finishing", "Cancelled"],
-        Finishing: ["Ready Pickup"],
-        "Ready Pickup": ["Completed"],
-      };
-
-      const nextStatuses = statusFlow[order.status] || [];
-
-      if (!nextStatuses.includes(status)) {
-        return res.status(400).json({
-          success: false,
-          message: `Cannot change status from ${order.status} to ${status}`,
-        });
-      }
-
-      const [updatedOrder] = await db("orders")
-        .where("id", id)
-        .update({
-          status,
-          updated_at: db.fn.now(),
-        })
-        .returning(["id", "invoice_number", "status", "updated_at"]);
-
-      res.json({
-        success: true,
-        message: "Order status updated successfully",
-        data: updatedOrder,
-      });
-    } catch (error) {
-      console.error(error);
-
-      res.status(500).json({
+      return res.status(400).json({
         success: false,
-        message: "Failed to update order status",
+        message: "Status is required",
       });
     }
+
+    if (!allowedStatuses.includes(status)) {
+      await trx.rollback();
+
+      return res.status(400).json({
+        success: false,
+        message: "Invalid order status",
+      });
+    }
+
+    const order = await trx("orders").where("id", id).first();
+
+    if (!order) {
+      await trx.rollback();
+
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    if (order.status === "Completed" || order.status === "Cancelled") {
+      await trx.rollback();
+
+      return res.status(400).json({
+        success: false,
+        message: `Order is already ${order.status}`,
+      });
+    }
+
+    const statusFlow = {
+      Pending: ["Measurement", "Cancelled"],
+      Measurement: ["Cutting", "Cancelled"],
+      Cutting: ["Sewing", "Cancelled"],
+      Sewing: ["Finishing", "Cancelled"],
+      Finishing: ["Ready Pickup"],
+      "Ready Pickup": ["Completed"],
+    };
+
+    const nextStatuses = statusFlow[order.status] || [];
+
+    if (!nextStatuses.includes(status)) {
+      await trx.rollback();
+
+      return res.status(400).json({
+        success: false,
+        message: `Cannot change status from ${order.status} to ${status}`,
+      });
+    }
+
+    const [updatedOrder] = await trx("orders")
+      .where("id", id)
+      .update({
+        status,
+        updated_at: trx.fn.now(),
+      })
+      .returning(["id", "invoice_number", "status", "updated_at"]);
+
+    // Simpan riwayat perubahan status
+    await trx("order_status_histories").insert({
+      order_id: id,
+      status,
+    });
+
+    await trx.commit();
+
+    res.json({
+      success: true,
+      message: "Order status updated successfully",
+      data: updatedOrder,
+    });
+  } catch (error) {
+    await trx.rollback();
+
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to update order status",
+    });
+  }
+};
+
+const getOrderStatusHistory = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const order = await db("orders").where("id", id).first();
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    const history = await db("order_status_histories")
+      .select("id", "status", "created_at")
+      .where("order_id", id)
+      .orderBy("created_at", "asc");
+
+    res.json({
+      success: true,
+      data: {
+        order_id: id,
+        invoice_number: order.invoice_number,
+        current_status: order.status,
+        history,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to get order status history",
+    });
+  }
 };
 
 module.exports = {
@@ -333,4 +391,5 @@ module.exports = {
   getOrderById,
   createOrder,
   updateOrderStatus,
+  getOrderStatusHistory,
 };
