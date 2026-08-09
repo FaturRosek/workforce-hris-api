@@ -79,6 +79,44 @@ const login = async (req, res) => {
   }
 };
 
+const getMe = async (req, res) => {
+  try {
+    const user = await db("users")
+      .select(
+        "users.id",
+        "users.username",
+        "users.role",
+        "users.employee_id",
+        "employees.full_name as employee_name",
+        "employees.email as employee_email",
+        "employees.phone as employee_phone",
+      )
+      .leftJoin("employees", "users.employee_id", "employees.id")
+      .where("users.id", req.user.id)
+      .first();
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      data: user,
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to get user profile",
+    });
+  }
+};
+
 module.exports = {
   login,
+  getMe,
 };
