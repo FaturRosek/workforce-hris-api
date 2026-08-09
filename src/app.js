@@ -27,8 +27,8 @@ app.use("/api/positions", positionRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/payments", paymentRoutes);
-app.use("/api/dashboard", authenticate, dashboardRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/dashboard", authenticate, dashboardRoutes);
 app.use(
   "/api/dashboard",
   authenticate,

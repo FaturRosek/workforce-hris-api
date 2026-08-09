@@ -116,7 +116,58 @@ const getMe = async (req, res) => {
   }
 };
 
+const assignEmployee = async (req, res) => {
+  try {
+    const { employee_id } = req.body;
+
+    if (!employee_id) {
+      return res.status(400).json({
+        success: false,
+        message: "Employee ID is required",
+      });
+    }
+
+    const employee = await db("employees").where("id", employee_id).first();
+
+    if (!employee) {
+      return res.status(404).json({
+        success: false,
+        message: "Employee not found",
+      });
+    }
+
+    const [user] = await db("users")
+      .where("id", req.params.id)
+      .update({
+        employee_id,
+        updated_at: db.fn.now(),
+      })
+      .returning(["id", "username", "role", "employee_id"]);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Employee assigned successfully",
+      data: user,
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to assign employee",
+    });
+  }
+};
+
 module.exports = {
   login,
   getMe,
+  assignEmployee,
 };
