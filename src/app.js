@@ -9,6 +9,7 @@ const paymentRoutes = require("./routes/paymentRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const authRoutes = require("./routes/authRoutes");
 const authenticate = require("./middleware/authMiddleware");
+const authorize = require("./middleware/roleMiddleware");
 
 const app = express();
 
@@ -28,5 +29,11 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/dashboard", authenticate, dashboardRoutes);
 app.use("/api/auth", authRoutes);
+app.use(
+  "/api/dashboard",
+  authenticate,
+  authorize("Admin", "Staff"),
+  dashboardRoutes,
+);
 
 module.exports = app;
