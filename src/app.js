@@ -10,6 +10,7 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 const authRoutes = require("./routes/authRoutes");
 const authenticate = require("./middleware/authMiddleware");
 const authorize = require("./middleware/roleMiddleware");
+const measurementRoutes = require("./routes/measurementRoutes");
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.use("/api/services", serviceRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/measurements", measurementRoutes);
 app.use("/api/dashboard", authenticate, dashboardRoutes);
 app.use(
   "/api/dashboard",
