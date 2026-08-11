@@ -276,6 +276,7 @@ const updateOrderStatus = async (req, res) => {
       });
     }
 
+    // Cari order
     const order = await trx("orders").where("id", id).first();
 
     if (!order) {
@@ -287,6 +288,7 @@ const updateOrderStatus = async (req, res) => {
       });
     }
 
+    // Order Completed / Cancelled tidak boleh diubah lagi
     if (order.status === "Completed" || order.status === "Cancelled") {
       await trx.rollback();
 
@@ -296,6 +298,7 @@ const updateOrderStatus = async (req, res) => {
       });
     }
 
+    // Alur status MM Tailor
     const statusFlow = {
       Pending: ["Measurement", "Cancelled"],
       Measurement: ["Cutting", "Cancelled"],
@@ -316,15 +319,16 @@ const updateOrderStatus = async (req, res) => {
       });
     }
 
+    // Update order
     const [updatedOrder] = await trx("orders")
       .where("id", id)
       .update({
         status,
-        updated_at: trx.fn.now(),
+        updated_at: db.fn.now(),
       })
       .returning(["id", "invoice_number", "status", "updated_at"]);
 
-    // Simpan riwayat perubahan status
+    // Simpan history status
     await trx("order_status_histories").insert({
       order_id: id,
       status,
