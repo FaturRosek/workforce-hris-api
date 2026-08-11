@@ -12,6 +12,7 @@ const authenticate = require("./middleware/authMiddleware");
 const authorize = require("./middleware/roleMiddleware");
 const measurementRoutes = require("./routes/measurementRoutes");
 const orderStatusHistoryRoutes = require("./routes/orderStatusHistoryRoutes");
+const productionRoutes = require("./routes/productionRoutes");
 
 const app = express();
 
@@ -39,5 +40,6 @@ app.use(
   dashboardRoutes,
 );
 app.use("/api/order-status-history", orderStatusHistoryRoutes);
+app.use("/api/production", productionRoutes);
 
 module.exports = app;
