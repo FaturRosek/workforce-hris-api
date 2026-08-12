@@ -4,6 +4,7 @@ const {
   getNotifications,
   getUnreadCount,
   markAsRead,
+  generatePickupNotifications,
 } = require("../controllers/notificationController");
 
 const authenticate = require("../middleware/authMiddleware");
@@ -30,6 +31,13 @@ router.put(
   authenticate,
   authorize("Admin", "Staff", "Tailor"),
   markAsRead,
+);
+
+router.post(
+  "/generate-pickup",
+  authenticate,
+  authorize("Admin", "Staff"),
+  generatePickupNotifications,
 );
 
 module.exports = router;
