@@ -141,8 +141,75 @@ const getProductionSummary = async (req, res) => {
   }
 };
 
+const getPickupOrders = async (req, res) => {
+  try {
+    const { days = 3 } = req.query;
+
+    const numberOfDays = Number(days);
+
+    if (
+      !Number.isInteger(numberOfDays) ||
+      numberOfDays < 0 ||
+      numberOfDays > 30
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Days must be an integer between 0 and 30",
+      });
+    }
+
+    const today = new Date();
+
+    const endDate = new Date(today);
+    endDate.setDate(endDate.getDate() + numberOfDays);
+
+    const formatDate = (date) => {
+      return date.toISOString().slice(0, 10);
+    };
+
+    const startDate = formatDate(today);
+    const endDateFormatted = formatDate(endDate);
+
+    const orders = await db("orders")
+      .select(
+        "orders.id",
+        "orders.invoice_number",
+        "orders.order_date",
+        "orders.pickup_date",
+        "orders.status",
+        "orders.total_amount",
+        "customers.full_name as customer_name",
+        "customers.phone as customer_phone",
+      )
+      .leftJoin("customers", "orders.customer_id", "customers.id")
+      .whereBetween("orders.pickup_date", [startDate, endDateFormatted])
+      .whereNotIn("orders.status", ["Completed", "Cancelled"])
+      .orderBy("orders.pickup_date", "asc");
+
+    res.json({
+      success: true,
+      data: {
+        period: {
+          start_date: startDate,
+          end_date: endDateFormatted,
+        },
+        total: orders.length,
+        orders,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to get pickup orders",
+    });
+  }
+};
+
 module.exports = {
   getProductionByOrder,
   getProductionOrders,
   getProductionSummary,
+  getPickupOrders,
 };

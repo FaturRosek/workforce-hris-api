@@ -4,6 +4,7 @@ const {
   getProductionByOrder,
   getProductionOrders,
   getProductionSummary,
+  getPickupOrders,
 } = require("../controllers/productionController");
 
 const authenticate = require("../middleware/authMiddleware");
@@ -23,6 +24,13 @@ router.get(
   authenticate,
   authorize("Admin", "Staff", "Tailor"),
   getProductionOrders,
+);
+
+router.get(
+  "/pickup",
+  authenticate,
+  authorize("Admin", "Staff", "Tailor"),
+  getPickupOrders,
 );
 
 router.get(
