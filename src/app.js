@@ -13,6 +13,7 @@ const authorize = require("./middleware/roleMiddleware");
 const measurementRoutes = require("./routes/measurementRoutes");
 const orderStatusHistoryRoutes = require("./routes/orderStatusHistoryRoutes");
 const productionRoutes = require("./routes/productionRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
 const app = express();
 
@@ -41,5 +42,6 @@ app.use(
 );
 app.use("/api/order-status-history", orderStatusHistoryRoutes);
 app.use("/api/production", productionRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 module.exports = app;
