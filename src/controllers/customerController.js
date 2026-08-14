@@ -2,21 +2,66 @@ const db = require("../config/db");
 
 const getCustomers = async (req, res) => {
   try {
-    const customers = await db("customers")
-      .select(
-        "id",
-        "customer_code",
-        "full_name",
-        "phone",
-        "email",
-        "address",
-        "created_at",
-      )
-      .orderBy("id", "asc");
+    const { page = 1, limit = 10, search } = req.query;
+
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
+
+    if (!Number.isInteger(pageNumber) || pageNumber < 1) {
+      return res.status(400).json({
+        success: false,
+        message: "Page must be a positive integer",
+      });
+    }
+
+    if (
+      !Number.isInteger(limitNumber) ||
+      limitNumber < 1 ||
+      limitNumber > 100
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Limit must be between 1 and 100",
+      });
+    }
+
+    const offset = (pageNumber - 1) * limitNumber;
+
+    const query = db("customers");
+
+    if (search) {
+      query.where(function () {
+        this.whereILike("full_name", `%${search}%`)
+          .orWhereILike("phone", `%${search}%`)
+          .orWhereILike("email", `%${search}%`);
+      });
+    }
+
+    const countResult = await query
+      .clone()
+      .clearSelect()
+      .clearOrder()
+      .count("id as total")
+      .first();
+
+    const customers = await query
+      .clone()
+      .select("id", "full_name", "phone", "email", "address", "created_at")
+      .orderBy("id", "desc")
+      .limit(limitNumber)
+      .offset(offset);
+
+    const total = Number(countResult.total || 0);
 
     res.json({
       success: true,
       data: customers,
+      pagination: {
+        page: pageNumber,
+        limit: limitNumber,
+        total,
+        total_pages: Math.ceil(total / limitNumber),
+      },
     });
   } catch (error) {
     console.error(error);
