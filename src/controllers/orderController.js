@@ -2,7 +2,56 @@ const db = require("../config/db");
 
 const getOrders = async (req, res) => {
   try {
-    const orders = await db("orders")
+    const { page = 1, limit = 10, status, search } = req.query;
+
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
+
+    if (!Number.isInteger(pageNumber) || pageNumber < 1) {
+      return res.status(400).json({
+        success: false,
+        message: "Page must be a positive integer",
+      });
+    }
+
+    if (
+      !Number.isInteger(limitNumber) ||
+      limitNumber < 1 ||
+      limitNumber > 100
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Limit must be between 1 and 100",
+      });
+    }
+
+    const offset = (pageNumber - 1) * limitNumber;
+
+    const query = db("orders")
+      .leftJoin("customers", "orders.customer_id", "customers.id")
+      .leftJoin("employees", "orders.employee_id", "employees.id");
+
+    if (status) {
+      query.where("orders.status", status);
+    }
+
+    if (search) {
+      query.where(function () {
+        this.whereILike("orders.invoice_number", `%${search}%`)
+          .orWhereILike("customers.full_name", `%${search}%`)
+          .orWhereILike("employees.full_name", `%${search}%`);
+      });
+    }
+
+    const countQuery = query
+      .clone()
+      .clearSelect()
+      .clearOrder()
+      .count("orders.id as total")
+      .first();
+
+    const ordersQuery = query
+      .clone()
       .select(
         "orders.id",
         "orders.invoice_number",
@@ -14,13 +63,24 @@ const getOrders = async (req, res) => {
         "customers.full_name as customer_name",
         "employees.full_name as employee_name",
       )
-      .leftJoin("customers", "orders.customer_id", "customers.id")
-      .leftJoin("employees", "orders.employee_id", "employees.id")
-      .orderBy("orders.id", "desc");
+      .orderBy("orders.id", "desc")
+      .limit(limitNumber)
+      .offset(offset);
+
+    const [countResult, orders] = await Promise.all([countQuery, ordersQuery]);
+
+    const total = Number(countResult.total || 0);
+    const totalPages = Math.ceil(total / limitNumber);
 
     res.json({
       success: true,
       data: orders,
+      pagination: {
+        page: pageNumber,
+        limit: limitNumber,
+        total,
+        total_pages: totalPages,
+      },
     });
   } catch (error) {
     console.error(error);
