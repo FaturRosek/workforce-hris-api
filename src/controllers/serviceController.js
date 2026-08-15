@@ -2,20 +2,82 @@ const db = require("../config/db");
 
 const getServices = async (req, res) => {
   try {
-    const services = await db("services")
+    const { page = 1, limit = 10, search, is_active } = req.query;
+
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
+
+    if (!Number.isInteger(pageNumber) || pageNumber < 1) {
+      return res.status(400).json({
+        success: false,
+        message: "Page must be a positive integer",
+      });
+    }
+
+    if (
+      !Number.isInteger(limitNumber) ||
+      limitNumber < 1 ||
+      limitNumber > 100
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Limit must be between 1 and 100",
+      });
+    }
+
+    if (is_active !== undefined && !["true", "false"].includes(is_active)) {
+      return res.status(400).json({
+        success: false,
+        message: "is_active must be true or false",
+      });
+    }
+
+    const offset = (pageNumber - 1) * limitNumber;
+
+    const query = db("services");
+
+    if (search) {
+      query.where(function () {
+        this.whereILike("service_name", `%${search}%`);
+      });
+    }
+
+    if (is_active !== undefined) {
+      query.where("is_active", is_active === "true");
+    }
+
+    const countResult = await query
+      .clone()
+      .clearSelect()
+      .clearOrder()
+      .count("id as total")
+      .first();
+
+    const services = await query
+      .clone()
       .select(
         "id",
         "service_name",
-        "price",
-        "estimated_days",
         "description",
+        "price",
+        "is_active",
         "created_at",
       )
-      .orderBy("id", "asc");
+      .orderBy("id", "desc")
+      .limit(limitNumber)
+      .offset(offset);
+
+    const total = Number(countResult.total || 0);
 
     res.json({
       success: true,
       data: services,
+      pagination: {
+        page: pageNumber,
+        limit: limitNumber,
+        total,
+        total_pages: Math.ceil(total / limitNumber),
+      },
     });
   } catch (error) {
     console.error(error);
