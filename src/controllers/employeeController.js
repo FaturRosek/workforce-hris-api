@@ -2,22 +2,99 @@ const db = require("../config/db");
 
 const getEmployees = async (req, res) => {
   try {
-    const employees = await db("employees")
+    const { page = 1, limit = 10, search, status, position_id } = req.query;
+
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
+
+    if (!Number.isInteger(pageNumber) || pageNumber < 1) {
+      return res.status(400).json({
+        success: false,
+        message: "Page must be a positive integer",
+      });
+    }
+
+    if (
+      !Number.isInteger(limitNumber) ||
+      limitNumber < 1 ||
+      limitNumber > 100
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Limit must be between 1 and 100",
+      });
+    }
+
+    const query = db("employees").leftJoin(
+      "positions",
+      "employees.position_id",
+      "positions.id",
+    );
+
+    if (search) {
+      query.where(function () {
+        this.whereILike("employees.full_name", `%${search}%`)
+          .orWhereILike("employees.employee_code", `%${search}%`)
+          .orWhereILike("employees.phone", `%${search}%`)
+          .orWhereILike("employees.email", `%${search}%`);
+      });
+    }
+
+    if (status) {
+      query.where("employees.status", status);
+    }
+
+    if (position_id !== undefined) {
+      const positionIdNumber = Number(position_id);
+
+      if (!Number.isInteger(positionIdNumber) || positionIdNumber < 1) {
+        return res.status(400).json({
+          success: false,
+          message: "position_id must be a positive integer",
+        });
+      }
+
+      query.where("employees.position_id", positionIdNumber);
+    }
+
+    const countResult = await query
+      .clone()
+      .clearSelect()
+      .clearOrder()
+      .count("employees.id as total")
+      .first();
+
+    const offset = (pageNumber - 1) * limitNumber;
+
+    const employees = await query
+      .clone()
       .select(
         "employees.id",
         "employees.employee_code",
         "employees.full_name",
         "employees.email",
         "employees.phone",
-        "employees.status",
+        "employees.position_id",
         "positions.position_name",
+        "employees.status",
+        "employees.created_at",
+        "employees.updated_at",
       )
-      .leftJoin("positions", "employees.position_id", "positions.id")
-      .orderBy("employees.id", "asc");
+      .orderBy("employees.id", "desc")
+      .limit(limitNumber)
+      .offset(offset);
+
+    const total = Number(countResult.total || 0);
 
     res.json({
       success: true,
       data: employees,
+      pagination: {
+        page: pageNumber,
+        limit: limitNumber,
+        total,
+        total_pages: Math.ceil(total / limitNumber),
+      },
     });
   } catch (error) {
     console.error(error);
