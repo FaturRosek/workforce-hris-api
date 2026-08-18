@@ -9,10 +9,14 @@ const {
   getOrderStatusHistory,
 } = require("../controllers/orderController");
 
+const paymentController = require("../controllers/paymentController");
+
 const router = express.Router();
 
 router.get("/", getOrders);
 router.get("/:id/history", getOrderStatusHistory);
+router.get("/:id/payment-summary", paymentController.getOrderPaymentSummary);
+router.get("/:id/payments", paymentController.getOrderPayments);
 router.get("/:id", getOrderById);
 router.post("/", createOrder);
 router.put(
