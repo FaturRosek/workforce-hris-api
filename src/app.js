@@ -46,4 +46,8 @@ app.use("/api/production", productionRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/reports", reportRoutes);
 
+// Swagger UI
+const { swaggerUi, swaggerDocument } = require("./docs/swagger");
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
 module.exports = app;
