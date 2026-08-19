@@ -2,7 +2,7 @@ const db = require("../config/db");
 
 const getServices = async (req, res) => {
   try {
-    const { page = 1, limit = 10, search, is_active } = req.query;
+    const { page = 1, limit = 10, search } = req.query;
 
     const pageNumber = Number(page);
     const limitNumber = Number(limit);
@@ -25,25 +25,17 @@ const getServices = async (req, res) => {
       });
     }
 
-    if (is_active !== undefined && !["true", "false"].includes(is_active)) {
-      return res.status(400).json({
-        success: false,
-        message: "is_active must be true or false",
-      });
-    }
-
     const offset = (pageNumber - 1) * limitNumber;
 
     const query = db("services");
 
     if (search) {
       query.where(function () {
-        this.whereILike("service_name", `%${search}%`);
+        this.whereILike("service_name", `%${search}%`).orWhereILike(
+          "description",
+          `%${search}%`,
+        );
       });
-    }
-
-    if (is_active !== undefined) {
-      query.where("is_active", is_active === "true");
     }
 
     const countResult = await query
@@ -58,9 +50,9 @@ const getServices = async (req, res) => {
       .select(
         "id",
         "service_name",
-        "description",
         "price",
-        "is_active",
+        "estimated_days",
+        "description",
         "created_at",
       )
       .orderBy("id", "desc")
@@ -101,6 +93,7 @@ const getServiceById = async (req, res) => {
         "estimated_days",
         "description",
         "created_at",
+        "updated_at",
       )
       .where("id", id)
       .first();
@@ -130,7 +123,7 @@ const createService = async (req, res) => {
   try {
     const { service_name, price, estimated_days, description } = req.body;
 
-    if (!service_name || price === undefined || !estimated_days) {
+    if (!service_name || price === undefined || estimated_days === undefined) {
       return res.status(400).json({
         success: false,
         message: "Service name, price, and estimated days are required",

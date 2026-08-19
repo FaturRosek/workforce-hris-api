@@ -903,6 +903,220 @@ const swaggerDocument = {
         },
       },
     },
+
+    "/api/services": {
+      get: {
+        tags: ["Services"],
+        summary: "Get all services",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        responses: {
+          200: {
+            description: "Services retrieved successfully",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          500: {
+            description: "Failed to get services",
+          },
+        },
+      },
+
+      post: {
+        tags: ["Services"],
+        summary: "Create service",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["service_name", "price"],
+                properties: {
+                  service_name: {
+                    type: "string",
+                    example: "Jas Pria",
+                  },
+                  description: {
+                    type: "string",
+                    example: "Pembuatan jas pria custom",
+                  },
+                  price: {
+                    type: "number",
+                    example: 750000,
+                  },
+                  status: {
+                    type: "string",
+                    example: "Active",
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: "Service created successfully",
+          },
+          400: {
+            description: "Invalid service data",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          500: {
+            description: "Failed to create service",
+          },
+        },
+      },
+    },
+
+    "/api/services/{id}": {
+      get: {
+        tags: ["Services"],
+        summary: "Get service by ID",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+            },
+            example: 1,
+          },
+        ],
+        responses: {
+          200: {
+            description: "Service retrieved successfully",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "Service not found",
+          },
+          500: {
+            description: "Failed to get service",
+          },
+        },
+      },
+
+      put: {
+        tags: ["Services"],
+        summary: "Update service",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+            },
+            example: 1,
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  service_name: {
+                    type: "string",
+                    example: "Jas Pria Premium",
+                  },
+                  description: {
+                    type: "string",
+                    example: "Pembuatan jas pria premium custom",
+                  },
+                  price: {
+                    type: "number",
+                    example: 950000,
+                  },
+                  status: {
+                    type: "string",
+                    example: "Active",
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "Service updated successfully",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "Service not found",
+          },
+          500: {
+            description: "Failed to update service",
+          },
+        },
+      },
+
+      delete: {
+        tags: ["Services"],
+        summary: "Delete service",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+            },
+            example: 1,
+          },
+        ],
+        responses: {
+          200: {
+            description: "Service deleted successfully",
+          },
+          400: {
+            description: "Service cannot be deleted",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "Service not found",
+          },
+          500: {
+            description: "Failed to delete service",
+          },
+        },
+      },
+    },
   },
 };
 
