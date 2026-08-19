@@ -419,6 +419,490 @@ const swaggerDocument = {
         },
       },
     },
+
+    "/api/employees": {
+      get: {
+        tags: ["Employees"],
+        summary: "Get employees",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        parameters: [
+          {
+            name: "page",
+            in: "query",
+            required: false,
+            schema: {
+              type: "integer",
+              minimum: 1,
+              default: 1,
+            },
+            example: 1,
+          },
+          {
+            name: "limit",
+            in: "query",
+            required: false,
+            schema: {
+              type: "integer",
+              minimum: 1,
+              maximum: 100,
+              default: 10,
+            },
+            example: 10,
+          },
+          {
+            name: "search",
+            in: "query",
+            required: false,
+            schema: {
+              type: "string",
+            },
+            example: "Dimas",
+          },
+        ],
+        responses: {
+          200: {
+            description: "Employees retrieved successfully",
+          },
+          400: {
+            description: "Invalid pagination parameters",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          500: {
+            description: "Failed to get employees",
+          },
+        },
+      },
+
+      post: {
+        tags: ["Employees"],
+        summary: "Create employee",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["employee_code", "full_name", "email", "password"],
+                properties: {
+                  employee_code: {
+                    type: "string",
+                    example: "EMP-004",
+                  },
+                  full_name: {
+                    type: "string",
+                    example: "Budi Santoso",
+                  },
+                  email: {
+                    type: "string",
+                    format: "email",
+                    example: "budi@example.com",
+                  },
+                  phone: {
+                    type: "string",
+                    example: "081234567890",
+                  },
+                  password: {
+                    type: "string",
+                    format: "password",
+                    example: "password123",
+                  },
+                  position_id: {
+                    type: "integer",
+                    example: 1,
+                  },
+                  status: {
+                    type: "string",
+                    enum: ["Active", "Inactive"],
+                    example: "Active",
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: "Employee created successfully",
+          },
+          400: {
+            description: "Invalid employee data",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          500: {
+            description: "Failed to create employee",
+          },
+        },
+      },
+    },
+
+    "/api/employees/{id}": {
+      get: {
+        tags: ["Employees"],
+        summary: "Get employee by ID",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+            },
+            example: 1,
+          },
+        ],
+        responses: {
+          200: {
+            description: "Employee retrieved successfully",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "Employee not found",
+          },
+          500: {
+            description: "Failed to get employee",
+          },
+        },
+      },
+
+      put: {
+        tags: ["Employees"],
+        summary: "Update employee",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+            },
+            example: 1,
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  employee_code: {
+                    type: "string",
+                    example: "EMP-001",
+                  },
+                  full_name: {
+                    type: "string",
+                    example: "Dimas Saputra",
+                  },
+                  email: {
+                    type: "string",
+                    format: "email",
+                    example: "dimas@example.com",
+                  },
+                  phone: {
+                    type: "string",
+                    example: "081234567890",
+                  },
+                  password: {
+                    type: "string",
+                    format: "password",
+                    example: "password123",
+                  },
+                  position_id: {
+                    type: "integer",
+                    example: 1,
+                  },
+                  status: {
+                    type: "string",
+                    enum: ["Active", "Inactive"],
+                    example: "Active",
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "Employee updated successfully",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "Employee not found",
+          },
+          500: {
+            description: "Failed to update employee",
+          },
+        },
+      },
+
+      delete: {
+        tags: ["Employees"],
+        summary: "Delete employee",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+            },
+            example: 1,
+          },
+        ],
+        responses: {
+          200: {
+            description: "Employee deleted successfully",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "Employee not found",
+          },
+          500: {
+            description: "Failed to delete employee",
+          },
+        },
+      },
+    },
+
+    "/api/positions": {
+      get: {
+        tags: ["Positions"],
+        summary: "Get all positions",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        responses: {
+          200: {
+            description: "Positions retrieved successfully",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          500: {
+            description: "Failed to get positions",
+          },
+        },
+      },
+
+      post: {
+        tags: ["Positions"],
+        summary: "Create position",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["position_name"],
+                properties: {
+                  position_name: {
+                    type: "string",
+                    example: "Tailor",
+                  },
+                  description: {
+                    type: "string",
+                    example: "Employee responsible for sewing garments",
+                  },
+                  salary: {
+                    type: "number",
+                    example: 3500000,
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: "Position created successfully",
+          },
+          400: {
+            description: "Invalid position data",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          500: {
+            description: "Failed to create position",
+          },
+        },
+      },
+    },
+
+    "/api/positions/{id}": {
+      get: {
+        tags: ["Positions"],
+        summary: "Get position by ID",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+            },
+            example: 1,
+          },
+        ],
+        responses: {
+          200: {
+            description: "Position retrieved successfully",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "Position not found",
+          },
+          500: {
+            description: "Failed to get position",
+          },
+        },
+      },
+
+      put: {
+        tags: ["Positions"],
+        summary: "Update position",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+            },
+            example: 1,
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  position_name: {
+                    type: "string",
+                    example: "Senior Tailor",
+                  },
+                  description: {
+                    type: "string",
+                    example: "Senior garment tailor",
+                  },
+                  salary: {
+                    type: "number",
+                    example: 4500000,
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "Position updated successfully",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "Position not found",
+          },
+          500: {
+            description: "Failed to update position",
+          },
+        },
+      },
+
+      delete: {
+        tags: ["Positions"],
+        summary: "Delete position",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+            },
+            example: 1,
+          },
+        ],
+        responses: {
+          200: {
+            description: "Position deleted successfully",
+          },
+          400: {
+            description: "Position cannot be deleted",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "Position not found",
+          },
+          500: {
+            description: "Failed to delete position",
+          },
+        },
+      },
+    },
   },
 };
 
