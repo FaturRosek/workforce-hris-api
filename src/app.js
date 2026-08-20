@@ -15,6 +15,7 @@ const orderStatusHistoryRoutes = require("./routes/orderStatusHistoryRoutes");
 const productionRoutes = require("./routes/productionRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const reportRoutes = require("./routes/reportRoutes");
+const orderDetailRoutes = require("./routes/orderDetailRoutes");
 
 const app = express();
 
@@ -45,6 +46,7 @@ app.use("/api/order-status-history", orderStatusHistoryRoutes);
 app.use("/api/production", productionRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/order-details", orderDetailRoutes);
 
 // Swagger UI
 const { swaggerUi, swaggerDocument } = require("./docs/swagger");
