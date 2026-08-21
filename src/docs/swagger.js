@@ -1645,6 +1645,233 @@ const swaggerDocument = {
         },
       },
     },
+
+    "/api/order-details": {
+      get: {
+        tags: ["Order Details"],
+        summary: "Get order details",
+        description:
+          "Get order details. Use order_id to filter details belonging to a specific order.",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        parameters: [
+          {
+            name: "order_id",
+            in: "query",
+            required: false,
+            schema: {
+              type: "integer",
+            },
+            example: 1,
+            description: "Filter order details by order ID",
+          },
+        ],
+        responses: {
+          200: {
+            description: "Order details retrieved successfully",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          500: {
+            description: "Failed to get order details",
+          },
+        },
+      },
+
+      post: {
+        tags: ["Order Details"],
+        summary: "Create order detail",
+        description:
+          "Add a service to an existing order. Price and subtotal are calculated by the server from the selected service.",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["order_id", "service_id", "qty"],
+                properties: {
+                  order_id: {
+                    type: "integer",
+                    example: 1,
+                  },
+                  service_id: {
+                    type: "integer",
+                    example: 1,
+                  },
+                  qty: {
+                    type: "integer",
+                    minimum: 1,
+                    example: 2,
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: "Order detail created successfully",
+          },
+          400: {
+            description: "Invalid order detail data",
+          },
+          404: {
+            description: "Order or service not found",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          500: {
+            description: "Failed to create order detail",
+          },
+        },
+      },
+    },
+
+    "/api/order-details/{id}": {
+      get: {
+        tags: ["Order Details"],
+        summary: "Get order detail by ID",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+            },
+            example: 1,
+          },
+        ],
+        responses: {
+          200: {
+            description: "Order detail retrieved successfully",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "Order detail not found",
+          },
+          500: {
+            description: "Failed to get order detail",
+          },
+        },
+      },
+
+      put: {
+        tags: ["Order Details"],
+        summary: "Update order detail",
+        description:
+          "Update service and quantity. Price and subtotal are recalculated by the server.",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+            },
+            example: 1,
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["service_id", "qty"],
+                properties: {
+                  service_id: {
+                    type: "integer",
+                    example: 2,
+                  },
+                  qty: {
+                    type: "integer",
+                    minimum: 1,
+                    example: 3,
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "Order detail updated successfully",
+          },
+          400: {
+            description: "Invalid order detail data",
+          },
+          404: {
+            description: "Order detail or service not found",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          500: {
+            description: "Failed to update order detail",
+          },
+        },
+      },
+
+      delete: {
+        tags: ["Order Details"],
+        summary: "Delete order detail",
+        description: "Delete an order detail and recalculate the order total.",
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+            },
+            example: 1,
+          },
+        ],
+        responses: {
+          200: {
+            description: "Order detail deleted successfully",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "Order detail not found",
+          },
+          500: {
+            description: "Failed to delete order detail",
+          },
+        },
+      },
+    },
   },
 };
 
